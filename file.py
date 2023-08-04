@@ -16,14 +16,15 @@ dp: Dispatcher = Dispatcher()
 # Этот хэндлер будет срабатывать на команду "/start"
 @dp.message(Command(commands=["start"]))
 async def process_start_command(message: Message):
-    await message.answer('Привет!\nМеня зовут Кото-бот!\nНапиши /help и узнай, что я умею')
+    await message.answer('Привет!\nМеня зовут Кото-бот!\nНапиши /menu и узнай, что я умею')
 
 
-# Этот хэндлер будет срабатывать на команду "/help"
-@dp.message(Command(commands=["help"]))
+# Этот хэндлер будет срабатывать на команду "/menu"
+@dp.message(Command(commands=["menu"]))
 async def process_help_command(message: Message):
-    await message.answer('Обычно я играю в попугая и повторяю за тобой '
-                        'Но если нажмешь /cat, я порадую тебя котик(ом/ами)')
+    await message.answer('Обычно я играю в попугая и повторяю за тобой, но не всегда:\n '
+                         'нажми /cat и я порадую тебя котик(ом/ами)\n '
+                         'нажми /gif и я кину в тебя гифкой')
 
 # Этот хэндлер будет срабатывать на команду "/cat"
 @dp.message(Command(commands=["cat"]))
@@ -36,12 +37,23 @@ async def process_help_command(message: Message):
         await message.reply('Сорян котов не будет '
                             'Попробуй снова немного позже')
 
+# Этот хэндлер будет срабатывать на команду "/gif"
+@dp.message(Command(commands=["gif"]))
+async def process_help_command(message: Message):
+    gif_response = requests.get('https://yesno.wtf/api')
+    if gif_response.status_code == 200:
+        gif_link = gif_response.json()['image']
+        await message.reply_animation(gif_link)
+    else:
+        await message.reply('Сорян гифок не будет '
+                            'Попробуй снова немного позже')
+
 # Этот хэндлер будет срабатывать на любые ваши сообщения,
 # кроме команд "/start" и "/help"
 @dp.message()
 async def send_echo(message: Message):
     try:
-        await message.send_copy(chat_id=message.chat.id)
+        await message.copy_to(chat_id=message.chat.id)
     except TypeError:
         await message.reply(text='Данный тип апдейтов не поддерживается '
                                  'методом send_copy')
