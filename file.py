@@ -130,10 +130,14 @@ async def process_stat_command(message: Message):
 # Этот хэндлер будет срабатывать на команду "/cancel"
 @dp.message(Command(commands=['cancel']))
 async def process_cancel_command(message: Message):
-    await message.answer('Жаль, что ты уходишь(.\n '
-                         'Если захочешь поиграть со мной '
-                         'снова - просто нажми /game')
-    users[message.from_user.id]['in_game'] = False
+    if message.from_user.id not in users or not users[message.from_user.id]['in_game']:
+        await message.answer('Мы и так с тобой не играем. '
+                             'Хочешь сыграть? Жми /game')
+    else:
+        await message.answer('Жаль, что ты уходишь(.\n '
+                             'Если захочешь поиграть со мной '
+                             'снова - просто нажми /game')
+        users[message.from_user.id]['in_game'] = False
 
 
 # Этот хэндлер будет срабатывать на команду "/go"
