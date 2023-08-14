@@ -3,13 +3,15 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
 from aiogram.types import Message
 import random
-from environs import Env
+from config import load_config
 
-# Получение доступа к файлу ".env" со скрытыми данными
-env = Env()
-env.read_env()
+# Получение доступа к файлу "config.py"
+config = load_config()
 
-bot_token: str = env('BOT_TOKEN')
+# Данные бота и админа
+bot_token: str = config.tg_bot.token
+admin = config.tg_bot.admin_id
+
 
 # Создаем объекты бота и диспетчера
 bot: Bot = Bot(token=bot_token)
