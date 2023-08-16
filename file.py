@@ -1,9 +1,10 @@
 import requests
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
-from aiogram.types import Message
+from aiogram.types import (KeyboardButton, Message, ReplyKeyboardMarkup, ReplyKeyboardRemove)
 import random
 from config import load_config
+from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
 # Получение доступа к файлу "config.py"
 config = load_config()
@@ -17,14 +18,29 @@ admin = config.tg_bot.admin_id
 bot: Bot = Bot(token=bot_token)
 dp: Dispatcher = Dispatcher()
 
+# Инициализация простых кнопок
+button_1: KeyboardButton = KeyboardButton(text='Игра')
+button_2: KeyboardButton = KeyboardButton(text='Статистика')
+button_3: KeyboardButton = KeyboardButton(text='Выход')
+
+game_builder: ReplyKeyboardBuilder = ReplyKeyboardBuilder()
+game_builder.row(button_1, button_2, button_3)
+
+regame_builder: ReplyKeyboardBuilder = ReplyKeyboardBuilder()
+regame_builder.row(button_1, button_2)
+
+exit_builder: ReplyKeyboardBuilder = ReplyKeyboardBuilder()
+exit_builder.row(button_3)
+
 
 # Этот хэндлер будет срабатывать на команду "/start"
 @dp.message(Command(commands=["start"]))
 async def process_start_command(message: Message):
     if message.from_user.id in users and users[message.from_user.id]['in_game']:
-        await message.answer('Мы же сейчас играем. '
-                             'Присылай, пожалуйста, только числа от 1 до 100 '
-                             'или нажми /cancel, если не хочешь продолжать игру')
+        await message.answer(text='Мы же сейчас играем. '
+                             'Присылай, пожалуйста, только числа от 1 до 100\n '
+                             'нажми Выход, если не хочешь продолжать игру',
+                             reply_markup=exit_builder.as_markup(resize_keyboard=True))
     else:
         await message.answer(f'Привет, {message.chat.first_name}!\n '
                              f'Меня зовут Кото-бот!\n '
@@ -35,9 +51,10 @@ async def process_start_command(message: Message):
 @dp.message(Command(commands=["menu"]))
 async def process_menu_command(message: Message):
     if message.from_user.id in users and users[message.from_user.id]['in_game']:
-        await message.answer('Мы же сейчас играем. '
-                             'Присылай, пожалуйста, только числа от 1 до 100 '
-                             'или нажми /cancel, если не хочешь продолжать игру')
+        await message.answer(text='Мы же сейчас играем. '
+                             'Присылай, пожалуйста, только числа от 1 до 100\n '
+                             'нажми Выход, если не хочешь продолжать игру',
+                             reply_markup=exit_builder.as_markup(resize_keyboard=True))
     else:
         await message.answer('Обычно я играю в попугая и повторяю за тобой, '
                              'но не всегда:\n '
@@ -50,9 +67,10 @@ async def process_menu_command(message: Message):
 @dp.message(Command(commands=["cat"]))
 async def process_cat_command(message: Message):
     if message.from_user.id in users and users[message.from_user.id]['in_game']:
-        await message.answer('Мы же сейчас играем. '
-                             'Присылай, пожалуйста, только числа от 1 до 100 '
-                             'или нажми /cancel, если не хочешь продолжать игру')
+        await message.answer(text='Мы же сейчас играем. '
+                             'Присылай, пожалуйста, только числа от 1 до 100\n '
+                             'нажми Выход, если не хочешь продолжать игру',
+                             reply_markup=exit_builder.as_markup(resize_keyboard=True))
     else:
         cat_response = requests.get('https://api.thecatapi.com/v1/images/search')
         if cat_response.status_code == 200:
@@ -67,9 +85,10 @@ async def process_cat_command(message: Message):
 @dp.message(Command(commands=["gif"]))
 async def process_gif_command(message: Message):
     if message.from_user.id in users and users[message.from_user.id]['in_game']:
-        await message.answer('Мы же сейчас играем. '
-                             'Присылай, пожалуйста, только числа от 1 до 100 '
-                             'или нажми /cancel, если не хочешь продолжать игру')
+        await message.answer(text='Мы же сейчас играем. '
+                             'Присылай, пожалуйста, только числа от 1 до 100\n '
+                             'нажми Выход, если не хочешь продолжать игру',
+                             reply_markup=exit_builder.as_markup(resize_keyboard=True))
     else:
         gif_response = requests.get('https://yesno.wtf/api')
         if gif_response.status_code == 200:
@@ -111,16 +130,14 @@ async def process_game_command(message: Message):
                                        'attempts': None,
                                        'total_games': 0,
                                        'wins': 0}
-    await message.answer(f'Правила игры:\n\nЯ загадываю число от 1 до 100, '
+    await message.answer(text=f'Правила игры:\n\nЯ загадываю число от 1 до 100, '
                          f'а тебе нужно его угадать\nУ тебя есть {ATTEMPTS} '
-                         f'попыток\n\nДоступные команды:\n '
-                         f'/go - начать игру\n '
-                         f'/stat - посмотреть статистику\n '
-                         f'/cancel - выйти из игры')
+                         f'попыток',
+                         reply_markup=game_builder.as_markup(resize_keyboard=True))
 
 
-# Этот хэндлер будет срабатывать на команду "/stat"
-@dp.message(Command(commands=['stat']))
+# Этот хэндлер будет срабатывать на кнопку "Статистика"
+@dp.message(F.text == 'Статистика')
 async def process_stat_command(message: Message):
     await message.answer(
                     f'Всего игр сыграно: '
@@ -129,8 +146,8 @@ async def process_stat_command(message: Message):
                     f'Хочешь поиграть? Жми /game')
 
 
-# Этот хэндлер будет срабатывать на команду "/cancel"
-@dp.message(Command(commands=['cancel']))
+# Этот хэндлер будет срабатывать на кнопку "Выход"
+@dp.message(F.text == 'Выход')
 async def process_cancel_command(message: Message):
     if message.from_user.id not in users or not users[message.from_user.id]['in_game']:
         await message.answer('Мы и так с тобой не играем. '
@@ -142,8 +159,8 @@ async def process_cancel_command(message: Message):
         users[message.from_user.id]['in_game'] = False
 
 
-# Этот хэндлер будет срабатывать на команду "/go"
-@dp.message(Command(commands=['go']))
+# Этот хэндлер будет срабатывать на кнопку "Игра"
+@dp.message(F.text == 'Игра')
 async def process_go_command(message: Message):
     if not users[message.from_user.id]['in_game']:
         await message.answer('Ура!\n\nЯ загадал число от 1 до 100, '
@@ -161,10 +178,9 @@ async def process_go_command(message: Message):
 async def process_numbers_answer(message: Message):
     if users[message.from_user.id]['in_game']:
         if int(message.text) == users[message.from_user.id]['secret_number']:
-            await message.answer('Ура!!! Ты угадал(а) число!\n\n '
-                                 'Ты просто СУПЕР!!!\n '
-                                 '\n Жми /stat, если хочешь посмотреть статистику игр '
-                                 '\n Жми /go и мы сыграем еще раз')
+            await message.answer(text='Ура!!! Ты угадал(а) число!\n\n '
+                                 'Ты просто СУПЕР!!!\n',
+                                 reply_markup=regame_builder.as_markup(resize_keyboard=True))
             users[message.from_user.id]['in_game'] = False
             users[message.from_user.id]['total_games'] += 1
             users[message.from_user.id]['wins'] += 1
@@ -178,11 +194,9 @@ async def process_numbers_answer(message: Message):
             await message.answer(show_attempts(users[message.from_user.id]['attempts']))
 
         if users[message.from_user.id]['attempts'] == 0:
-            await message.answer(
-                    f'Ты проиграл(а) :(\n\nМое число '
-                    f'было {users[message.from_user.id]["secret_number"]} '
-                    f'\n Жми /stat, если хочешь посмотреть статистику игр '
-                    f'\n Жми /go и мы сыграем еще раз')
+            await message.answer(text=f'Ты проиграл(а) :(\n\nМое число '
+                                 f'было {users[message.from_user.id]["secret_number"]}',
+                                 reply_markup=regame_builder.as_markup(resize_keyboard=True))
             users[message.from_user.id]['in_game'] = False
             users[message.from_user.id]['total_games'] += 1
 
@@ -191,9 +205,10 @@ async def process_numbers_answer(message: Message):
 @dp.message()
 async def process_other_text_answers(message: Message):
     if message.from_user.id in users and users[message.from_user.id]['in_game']:
-        await message.answer('Мы же сейчас играем. '
-                             'Присылай, пожалуйста, только числа от 1 до 100 '
-                             'или нажми /cancel, если не хочешь продолжать игру')
+        await message.answer(text='Мы же сейчас играем. '
+                             'Присылай, пожалуйста, только числа от 1 до 100\n '
+                             'нажми Выход, если не хочешь продолжать игру',
+                             reply_markup=exit_builder.as_markup(resize_keyboard=True))
     else:
         try:
             await message.copy_to(chat_id=message.chat.id)
