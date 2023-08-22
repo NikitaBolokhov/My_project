@@ -19,16 +19,6 @@ async def process_start_command(message: Message):
                                   f'{LEXICON_RU["/start"]}')
 
 
-# Этот хэндлер будет срабатывать на команду "/menu"
-@router.message(Command(commands=["menu"]))
-async def process_menu_command(message: Message):
-    if message.from_user.id in users and users[message.from_user.id]['in_game']:
-        await message.answer(text=LEXICON_RU['in_game'],
-                             reply_markup=exit_kb)
-    else:
-        await message.answer(text=LEXICON_RU['/menu'])
-
-
 # Этот хэндлер будет срабатывать на команду "/cat"
 @router.message(Command(commands=["cat"]))
 async def process_cat_command(message: Message):
@@ -67,7 +57,8 @@ async def process_game_command(message: Message):
                                        'total_games': 0,
                                        'wins': 0}
     await message.answer(text=f'{LEXICON_RU["/game"]} '
-                              f' {ATTEMPTS} попыток',
+                              f' <b>{ATTEMPTS} попыток</b>.\n\n '
+                              f'Жми <b>Игра</b> и мы начнем;)',
                          reply_markup=game_kb)
 
 
@@ -122,7 +113,7 @@ async def process_numbers_answer(message: Message):
 
         if users[message.from_user.id]['attempts'] == 0:
             await message.answer(text=f"{LEXICON_RU['lose']} "
-                                      f"{users[message.from_user.id]['secret_number']}",
+                                      f"<b>{users[message.from_user.id]['secret_number']}</b>.",
                                  reply_markup=game_kb)
             users[message.from_user.id]['in_game'] = False
             users[message.from_user.id]['total_games'] += 1
