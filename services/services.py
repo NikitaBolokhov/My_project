@@ -17,9 +17,9 @@ def get_random_number() -> int:
 # Функция возвращающая оставшееся количество попыток
 def show_attempts(attempt: int) -> str:
     if attempt > 1:
-        return f'Доступное количество попыток: {attempt}'
+        return f'Доступное количество попыток: <b>{attempt}</b>.'
     elif attempt == 1:
-        return 'У тебя осталась последняя попытка'
+        return '<b>У тебя осталась последняя попытка.</b>'
     else:
         return 'К сожалению, попыток больше не осталось :('
 
