@@ -2,6 +2,7 @@ import asyncio
 import logging
 
 from aiogram import Bot, Dispatcher
+from aiogram.fsm.storage.memory import MemoryStorage
 from config_data.config import Config, load_config
 from handlers import other_handlers, user_handlers
 from keyboards.set_menu import set_main_menu
@@ -24,10 +25,13 @@ async def main():
     # Загружаем конфиг в переменную config
     config: Config = load_config()
 
+    # Инициализируем хранилище (создаем экземпляр класса MemoryStorage)
+    storage: MemoryStorage = MemoryStorage()
+
     # Инициализируем бот и диспетчер
     bot: Bot = Bot(token=config.tg_bot.token,
                    parse_mode='HTML')
-    dp: Dispatcher = Dispatcher()
+    dp: Dispatcher = Dispatcher(storage=storage)
 
     # Настраиваем кнопку Menu
     await set_main_menu(bot)

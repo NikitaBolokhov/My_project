@@ -1,0 +1,7 @@
+# Automatically created by mypy
+.env
+
+.vscode/
+venv/
+__pycache__/
+.mypy_cache/
